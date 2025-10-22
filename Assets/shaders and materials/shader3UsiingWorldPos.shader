@@ -126,17 +126,17 @@ Shader "Custom/shader3UsingWorldPos"
                 float mlShadowAttenuation = MainLightRealtimeShadow(TransformWorldToShadowCoord(IN.worldPos)); // get the shadow attenuation from the Unity function using a shadow map
                 float3 litColor = GetMainLight().color.rgb * NdotL * mlShadowAttenuation; // multiplies the light according to Lambertian diffuse model
 
-                float noise = fBM(IN.worldPos * 20. +_Time.y);
-                float noiseStep = smoothstep(0.7, 1., noise*1.21);
+                float3 worldNorm = IN.worldPos * 20.;
 
-                float2 st = IN.uv.xy;
+                float r = 0.5 + 0.5 * sin(worldNorm.x);
+                float g = 0.5 + 0.5 * sin(worldNorm.y);
+                float b = 0.5 + 0.5 * sin(worldNorm.z);
 
-                float3 bushCol = lerp(float3(0.0, 0.1, 0.0),float3(0.3, 0.4, 0.2),st.y);
+                float3 worldColor = float3(r, g, b);
 
-                float3 noise3 = float3(noiseStep, noiseStep, noiseStep)* (bushCol) + bushCol;
-                float3 finalOutput = (noise3 * litColor);
+                float3 finalColor = worldColor * litColor;
 
-                return half4(col.rgb,1);
+                return half4(finalColor, 1.0);
                 
             }
             ENDHLSL
