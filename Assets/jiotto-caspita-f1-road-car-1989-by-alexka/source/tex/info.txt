@@ -1,0 +1,36 @@
+Jiotto Caspita F1 Road Car 1989  by Alex.Ka.
+
+This is a fix and modified special version by Alex.Ka.
+
+You can use this model and textures for your projects or games - with using all credits from this text!
+
+Based on model: Sega GT 2002
+Model extracted - TomWin
+Parts: FM4/NFSMost Wanted/CSR2/Project Cars/Alex.Ka.
+Polycount - Midpoly with some hd details
+Textures: Alex.Ka./NFSMost Wanted
+Geometry Edited/Modified and Prepared for SketchFab: Alex.Ka.
+30/07/2022
+
+New Features
+
+= Special windows with correct real time reflections effect
+= Correct mirrors reflection with special texture
+= Individual texture for front window  (With the ability to add a decal - need edit)
+= Individual texture for rear window  (With the ability to add a decal - need edit)
+= Inside windows layer (for interior view driving)
+= Special "KUMHO" tire texture By Alex.Ka.
+= Qquality and realistic textures By Alex.Ka.
+= 100% new mapping of all geometry parts
+= 3D Badges modeled By Alex.Ka.
+= Wheels not hanging in the void (close by suspension)
+= Added new lowpoly interior
+
+
+---------------------------
+WORK VIDEO
+https://www.youtube.com/watch?v=U4tz_32F8nQ&t=4s
+
+
+WELCOME TO THE QUALITY CAR WORKS MODELS PAGE!
+https://sketchfab.com/Alex.Ka
