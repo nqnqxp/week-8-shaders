@@ -1,4 +1,4 @@
-Shader "Custom/shader2"
+Shader "Custom/shader3UsingWorldPos"
 {
     Properties
     {
@@ -79,14 +79,45 @@ Shader "Custom/shader2"
                 return OUT; //return an instance of the Varyings struct
             }
 
+            float hash21(float2 v){
+              return frac(23425.32 * sin(v.x*542.02 + v.y * 456.834));
+            }
+
+            float noise21(float2 uv){
+  
+              float2 scaleUV = floor(uv);
+              float2 unitUV = frac(uv);
+  
+              float2 noiseUV = scaleUV;
+  
+              float value1 = hash21(noiseUV);
+              float value2 = hash21(noiseUV + float2(1.,0.));
+              float value3 = hash21(noiseUV + float2(0.,1.));
+              float value4 = hash21(noiseUV + float2(1.,1.));
+  
+              unitUV = smoothstep(float2(0., 0.),float2(1., 1.),unitUV);
+  
+              float bresult = lerp(value1,value2,unitUV.x);
+              float tresult = lerp(value3,value4,unitUV.x);
+  
+              return lerp(bresult,tresult,unitUV.y);
+            }
+
+            float fBM(float2 uv){
+              float result = 0.;
+              for(int i = 0; i <  8; i++){
+                result = result + (noise21(uv * pow(2.,float(i))) / pow(2.,float(i)+1.));
+              }
+  
+              return result;
+            }
+
             // You might see something called v2f (now varyings) in built in shaders
-            half4 frag(Varyings IN) : SV_Target //note that this *function* has a SV_Target semantic, meaning it is the final output color of the pixel
+            half4 frag(Varyings IN) : SV_Target 
             {
-                // Example HLSL shading example
-                // Calculate distance from world position to target position
+                
                 float distance = 1.-length(IN.worldPos - _Target.xyz);
-                half4 col = _BaseColor * (distance+ _Intensity); // modulate base color by distance and intensity
-                // this above code is not used in the final color at the moment.
+                half4 col = _BaseColor * (distance+ _Intensity); 
 
                 //This is basic Lambertian diffuse shading https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/diffuse-lambertian-shading.html
                 float3 LightDirection = GetMainLight().direction;
@@ -95,37 +126,18 @@ Shader "Custom/shader2"
                 float mlShadowAttenuation = MainLightRealtimeShadow(TransformWorldToShadowCoord(IN.worldPos)); // get the shadow attenuation from the Unity function using a shadow map
                 float3 litColor = GetMainLight().color.rgb * NdotL * mlShadowAttenuation; // multiplies the light according to Lambertian diffuse model
 
-                /*
-                IN.uv -= 0.5;
+                float noise = fBM(IN.worldPos * 20. +_Time.y);
+                float noiseStep = smoothstep(0.7, 1., noise*1.21);
 
-                float3 colorr = float3(0.05, 0.05, 0.08); //background color
-    
-                //moving clover shapes from week2
-                for (int i = 0; i < 10; i++) {
-        
-                    float2 p = float2(sin(i*1.4 + (_Time.y*0.1))*0.6, sin(i*4.3 - (_Time.y*0.1) + 3.)*0.6);
+                float2 st = IN.uv.xy;
 
-                    float2 diff = IN.uv - p;
+                float3 bushCol = lerp(float3(0.0, 0.1, 0.0),float3(0.3, 0.4, 0.2),st.y);
 
-                    float r = length(diff);
-       
-                    float theta = atan2(diff.y, diff.x);
-        
-                    float petalEquation = abs(0.3 * cos(2.0 * theta)); 
+                float3 noise3 = float3(noiseStep, noiseStep, noiseStep)* (bushCol) + bushCol;
+                float3 finalOutput = (noise3 * litColor);
 
-                    float blur = 0.2;
-        
-                    float blossom = 1.0 - smoothstep(petalEquation, petalEquation + blur, r);
-
-                    float3 bCol = float3(0.9, 0.9, 1.0);
-
-                    colorr += bCol * blossom * 0.8;
-                }
-
-                float3 finalCol = colorr * litColor;
-                */
-
-                return half4(litColor.rgb,1);
+                return half4(col.rgb,1);
+                
             }
             ENDHLSL
         }

@@ -1,4 +1,4 @@
-﻿Shader "Custom/shader1"
+﻿Shader "Custom/shader1PortedExistingShader"
 {
     Properties
     {
@@ -82,11 +82,6 @@
             // You might see something called v2f (now varyings) in built in shaders
             half4 frag(Varyings IN) : SV_Target //note that this *function* has a SV_Target semantic, meaning it is the final output color of the pixel
             {
-                // Example HLSL shading example
-                // Calculate distance from world position to target position
-                float distance = 1.-length(IN.worldPos - _Target.xyz);
-                half4 col = _BaseColor * (distance+ _Intensity); // modulate base color by distance and intensity
-                // this above code is not used in the final color at the moment.
 
                 //This is basic Lambertian diffuse shading https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/diffuse-lambertian-shading.html
                 float3 LightDirection = GetMainLight().direction;

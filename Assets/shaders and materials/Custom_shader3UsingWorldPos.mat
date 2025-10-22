@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Custom_shader1
-  m_Shader: {fileID: 4800000, guid: 2a17f4bb9549424408a1cd4a014c6264, type: 3}
+  m_Name: Custom_shader3UsingWorldPos
+  m_Shader: {fileID: 4800000, guid: 229b1da9b5c57d242a2b7e12f595fbbc, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
