@@ -115,9 +115,6 @@ Shader "Custom/shader3UsingWorldPos"
             // You might see something called v2f (now varyings) in built in shaders
             half4 frag(Varyings IN) : SV_Target 
             {
-                
-                float distance = 1.-length(IN.worldPos - _Target.xyz);
-                half4 col = _BaseColor * (distance+ _Intensity); 
 
                 //This is basic Lambertian diffuse shading https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/diffuse-lambertian-shading.html
                 float3 LightDirection = GetMainLight().direction;
@@ -126,17 +123,17 @@ Shader "Custom/shader3UsingWorldPos"
                 float mlShadowAttenuation = MainLightRealtimeShadow(TransformWorldToShadowCoord(IN.worldPos)); // get the shadow attenuation from the Unity function using a shadow map
                 float3 litColor = GetMainLight().color.rgb * NdotL * mlShadowAttenuation; // multiplies the light according to Lambertian diffuse model
 
-                float3 worldNorm = IN.worldPos * 20.;
+                float grad = sin(1.-IN.worldPos.x+_Time.y);
+                float3 grad3 = float3(grad, grad, grad);
 
-                float r = 0.5 + 0.5 * sin(worldNorm.x);
-                float g = 0.5 + 0.5 * sin(worldNorm.y);
-                float b = 0.5 + 0.5 * sin(worldNorm.z);
+                float3 color1 = float3(0.7, 0.9, 0.7);
+                float3 color2 = float3(1., 1., 1.);
 
-                float3 worldColor = float3(r, g, b);
+                float3 finalColor = lerp(color1, color2, grad3);
 
-                float3 finalColor = worldColor * litColor;
+                float3 finalOutput = finalColor * litColor;
 
-                return half4(finalColor, 1.0);
+                return half4(finalOutput, 1.0);
                 
             }
             ENDHLSL
