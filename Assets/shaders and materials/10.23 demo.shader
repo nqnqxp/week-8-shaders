@@ -1,12 +1,10 @@
-﻿Shader "Custom/shader2TakesLightIntoAccount"
+Shader "Custom/10.23demo"
 {
     Properties
     {
-        // [Attribute] _PropertyName("Display Name", Type) = DefaultValue
-        [MainColor] _BaseColor("Base Color", Color) = (1, 1, 1, 1)
-        [MainTexture] _BaseMap("Base Map", 2D) = "white"
-        _Target ("TargetPosition", Vector) = (0,0,0,0)
-        _Intensity ("Intensity", Float) = 1
+        _BaseColor("Base Color", Color) = (1,1,1,1)
+        _CutOutLocation("CutOut Location", Vector) = (0,0,0,0)
+        _CutOutRadius("CutOut Radius", Float) = 1
     }
 
     SubShader
@@ -36,15 +34,16 @@
             // Preprocessor directions to include additional libraries. These basically copy and paste code from the files here
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "Assets/JasonNoise.hlsl"
 
             // Properties used for the shader. Notice that they match the ones in the Properties block above
             // They *must* be declared here again to be used in the shader code
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
-            half4 _BaseColor;
-            float4 _BaseMap_ST;
-            float4 _Target;
-            float _Intensity;
+
+            float4 _CutOutLocation;
+            float _CutOutRadius;
+            float4 _BaseColor;
 
             
             // This comes from outside of the shader
@@ -64,7 +63,6 @@
                 float4 positionHCS : SV_POSITION; // This is a unique semantic for the final vertex position in Homogeneous Clip Space
                 float2 uv : TEXCOORD0;
                 float3 worldPos : TEXCOORD1;
-                float3 worldNormal : TEXCOORD2;
             };
 
             // You might see something called appdata (now Attributes) in built in shaders
@@ -73,69 +71,27 @@
                 Varyings OUT;
                 OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz); //transform the vertex's object space position to homogeneous clip space (screen)
                 OUT.worldPos = TransformObjectToWorld(IN.positionOS.xyz); // transform the vertex's object space position to world space
-                OUT.worldNormal = TransformObjectToWorldNormal(IN.normalOS); // transform the vertex's object space normal to world space
 
-                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap); // transform the uv based on tiling and offset values
+                OUT.uv = IN.uv;
                 return OUT; //return an instance of the Varyings struct
             }
 
-            float hash21(float2 v){
-              return frac(23425.32 * sin(v.x*542.02 + v.y * 456.834));
-            }
-
-            float noise21(float2 uv){
-  
-              float2 scaleUV = floor(uv);
-              float2 unitUV = frac(uv);
-  
-              float2 noiseUV = scaleUV;
-  
-              float value1 = hash21(noiseUV);
-              float value2 = hash21(noiseUV + float2(1.,0.));
-              float value3 = hash21(noiseUV + float2(0.,1.));
-              float value4 = hash21(noiseUV + float2(1.,1.));
-  
-              unitUV = smoothstep(float2(0., 0.),float2(1., 1.),unitUV);
-  
-              float bresult = lerp(value1,value2,unitUV.x);
-              float tresult = lerp(value3,value4,unitUV.x);
-  
-              return lerp(bresult,tresult,unitUV.y);
-            }
-
-            float fBM(float2 uv){
-              float result = 0.;
-              for(int i = 0; i <  8; i++){
-                result = result + (noise21(uv * pow(2.,float(i))) / pow(2.,float(i)+1.));
-              }
-  
-              return result;
-            }
-
             // You might see something called v2f (now varyings) in built in shaders
-            half4 frag(Varyings IN) : SV_Target 
+            half4 frag(Varyings IN) : SV_Target //note that this *function* has a SV_Target semantic, meaning it is the final output color of the pixel
             {
-                float noise = fBM(IN.uv * 20. +_Time.y);
-                float noiseStep = smoothstep(0.7, 1., noise*1.21);
-
-                float2 st = IN.uv.xy;
-
-                float3 bushCol = lerp(float3(0.0, 0.1, 0.0),float3(0.3, 0.4, 0.2),st.y);
-
-                float3 noise3 = float3(noiseStep, noiseStep, noiseStep)* (bushCol) + bushCol;
-
-                //This is basic Lambertian diffuse shading https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/diffuse-lambertian-shading.html
-                float3 LightDirection = GetMainLight().direction;
-                float3 Normal = normalize(IN.worldNormal);
-                float NdotL = saturate(dot(Normal, LightDirection)); // Dot product is a Vector projection clamped between 0 and 1
-                float mlShadowAttenuation = MainLightRealtimeShadow(TransformWorldToShadowCoord(IN.worldPos)); // get the shadow attenuation from the Unity function using a shadow map
-                float3 litColor = GetMainLight().color.rgb * NdotL * mlShadowAttenuation; // multiplies the light according to Lambertian diffuse model
-
+                half3 color = _BaseColor.rgb;
+                float dist = distance(IN.worldPos.xyz, _CutOutLocation.xyz);
+                float angle = atan2(IN.worldPos.z - _CutOutLocation.z, IN.worldPos.x - _CutOutLocation.x);
+                float2 noiseCoord = float2(sin(angle + _Time.y), dist);
+                float2 noiseCoord2 = float2(cos(angle - _Time.y), dist+362);
+                dist += fBM(noiseCoord) * 0.3 - fBM(noiseCoord2) * 0.3;
                 
-                float3 finalOutput = (noise3 * litColor);
+                if (dist < _CutOutRadius) clip (-1);
+                float cutOutRing = _CutOutRadius + 0.25;
+                float ringFade = smoothstep(_CutOutRadius, cutOutRing, dist);
+                color = lerp(half3(3,1.5, 0.5), color, ringFade);
 
-                return half4(finalOutput.rgb,1);
-                
+                return half4(color, 1);
             }
             ENDHLSL
         }
@@ -159,3 +115,4 @@
         }
     }
 }
+ 
