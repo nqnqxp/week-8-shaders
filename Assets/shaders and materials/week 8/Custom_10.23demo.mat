@@ -33,7 +33,7 @@ Material:
     - _Intensity: 1
     m_Colors:
     - _BaseColor: {r: 0.45852616, g: 0.6037736, b: 0.45852935, a: 1}
-    - _CutOutLocation: {r: 4.34, g: 0.4, b: 1.22, a: 0}
+    - _CutOutLocation: {r: 4.34, g: 0.261, b: 1.22, a: 0}
     - _Target: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
